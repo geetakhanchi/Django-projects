@@ -1,9 +1,9 @@
 from django.shortcuts import render
 from .models import Customer, Product, Cart, OrderPlaced
 from django.views import View
+from .forms import CustomerRegistrationForm
+from django.contrib import messages
 
-# def home(request):
-#  return render(request, 'app/home.html')
 
 class ProductView(View):
  def get(self, request):
@@ -19,8 +19,6 @@ class ProductDetailView(View):
   product = Product.objects.get(pk=pk)
   return render(request, 'app/productdetail.html', {'product': product})
 
-# def product_detail(request):
-#  return render(request, 'app/productdetail.html')
 
 def add_to_cart(request):
  return render(request, 'app/addtocart.html')
@@ -43,15 +41,29 @@ def change_password(request):
 def mobile(request, data=None):
  if data == None:
   mobiles = Product.objects.filter(category='M')
- elif data == 'Redmi' or data == 'Samsung' or data == 'Oppo' or data == 'iPhone':
-  mobiles = Product.objects.filter(category='M').filter(brand=data) 
+ elif data == 'Redmi' or data == 'Samsung' or data == 'Oppo' or data == 'iPhone' or data == 'vivo':
+  mobiles = Product.objects.filter(category='M').filter(brand=data)
+ elif data == 'below':
+  mobiles = Product.objects.filter(category='M').filter(discounted_price__lt=10000)
+ elif data == 'above':
+  mobiles = Product.objects.filter(category='M').filter(discounted_price__gt=10000)
  return render(request, 'app/mobile.html', {'mobiles':mobiles})
 
 def login(request):
  return render(request, 'app/login.html')
 
-def customerregistration(request):
- return render(request, 'app/customerregistration.html')
+class CustomerRegistrationView(View):
+ def get(self, request):
+  form = CustomerRegistrationForm()
+  return render(request,'app/customerregistration.html', context={'form':form})
+ def post(self, request):
+  form = CustomerRegistrationForm(request.POST)
+  if form.is_valid():
+   messages.success(request, "Congratulations !! Registred successfully.")
+   form.save()
+  return render(request,'app/customerregistration.html', context={'form':form})
+
+   
 
 def checkout(request):
  return render(request, 'app/checkout.html')
